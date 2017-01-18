@@ -48,8 +48,8 @@ cpu_params() {
 	"hyper_threading":"%s",
 	"L1d":"%s","L1i":"%s",
 	"L2":"%s","L3":"%s"}\n' "$number_proc_core" "$model" "$vendor" "$freq" \
-	                         "$ht" "$l1d_cache" "$l1i_cache" \
-													 "$l2_cache" "$l3_cache"
+		"$ht" "$l1d_cache" "$l1i_cache" \
+		"$l2_cache" "$l3_cache"
 
 }
 
@@ -73,7 +73,7 @@ gen_iface_params() {
 	"speed":"%s",
 	"rx_buffer":"%s",
 	"tx_buffer":"%s"}\n' "$iface" "$product_name" "$driver" "$queue_count" "$speed" "$rx_buffer" \
-	                         "$tx_buffer"
+		"$tx_buffer"
 }
 
 info_iface() {
