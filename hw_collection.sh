@@ -15,15 +15,17 @@ write_to_file() {
 
 find_params_cpu() {
 	local pattern="$1"
-	grep "$pattern" "$cpu" | awk -F: '{print $2}' | sed 's/^[ \t]*//'
+	grep "$pattern" "$cpu" | awk -F: '{print $2}' | sed 's/^[ \t]*//' | tr -s " "
 }
 
 mem_params() {
 	local mem_total
 	mem_total="$(cat /proc/meminfo | grep 'MemTotal' | awk -F: '{print $2}' | sed 's/^[ \t]*//' | cut -d' ' -f1)"
 	mem_free="$(cat /proc/meminfo | grep 'MemFree' | awk -F: '{print $2}' | sed 's/^[ \t]*//' | cut -d' ' -f1)"
-	printf '"RAM":{"total":"%s",
-	"free":"%s"}\n' "$mem_total" "$mem_free"
+	printf '"RAM": [
+	{"total":"%s",
+	"free":"%s"}
+	]\n' "$mem_total" "$mem_free"
 }
 
 cpu_params() {
@@ -41,13 +43,19 @@ cpu_params() {
 	l2_cache="$(find_params_cpu "L2 cache")"
 	l3_cache="$(find_params_cpu "L3 cache")"
 
-	printf '"processor": {"CPU":"%s",
+	printf '"processor": [
+	{
+    "CPU":"%s",
 	"model":"%s",
 	"vendor":"%s",
 	"frequency":"%s",
 	"hyper_threading":"%s",
-	"L1d":"%s","L1i":"%s",
-	"L2":"%s","L3":"%s"}\n' "$number_proc_core" "$model" "$vendor" "$freq" \
+	"L1d":"%s",
+    "L1i":"%s",
+	"L2":"%s",
+    "L3":"%s"
+    }
+	]\n' "$number_proc_core" "$model" "$vendor" "$freq" \
 		"$ht" "$l1d_cache" "$l1i_cache" \
 		"$l2_cache" "$l3_cache"
 
@@ -66,14 +74,34 @@ gen_iface_params() {
 	tx_buffer="$(ethtool -g "${iface%:}" |  tac | grep TX: | egrep -o [0-9]+ | tr '\n' '/'| sed 's|/$||g')"
 	queue_count="$(ls -1 /sys/class/net/"${iface%:}"/queues/ | grep "rx" | wc -l)"
 
-	printf '"interfaces": {"iface":"%s",
+	printf '"interfaces": [
+	{
+    "iface":"%s",
 	"product_name":"%s",
 	"driver":"%s",
 	"queue_count":"%s",
 	"speed":"%s",
 	"rx_buffer":"%s",
-	"tx_buffer":"%s"}\n' "$iface" "$product_name" "$driver" "$queue_count" "$speed" "$rx_buffer" \
+	"tx_buffer":"%s"
+    }
+	]\n' "$iface" "$product_name" "$driver" "$queue_count" "$speed" "$rx_buffer" \
 		"$tx_buffer"
+}
+
+virt_info() {
+	local virt="QEMU VBOX"
+    status="$(cat /proc/scsi/scsi | grep -v "CDDVDW" | grep -o -P '(?<=Vendor:).*(?=Model)' | sed 's/^[ ]*//' | sed 's/[ \t]*$//')"
+	#for vm in $virt; do
+	#	cat /proc/scsi/scsi | grep Vendor | grep "$vm" || continue
+	#	if [ "$?" = 0 ]; then
+	#		echo 
+	#	fi
+	#done
+    printf '"machine:
+    {
+    "Vendor":"%s"
+    }\n' "$status"
+
 }
 
 info_iface() {
@@ -93,9 +121,12 @@ info_iface() {
 
 main() {
 	rm -f "$equipment"
+	echo -e "{"
 	cpu_params
 	mem_params
 	info_iface
+    virt_info
+	echo -e "}"
 }
 
 main
