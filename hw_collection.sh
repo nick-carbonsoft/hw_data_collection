@@ -9,14 +9,6 @@ root_verify() {
 	fi
 }
 
-
-write_to_file() {
-    local description="$1"
-    local value="$2"
-    local equipment="/tmp/equipment"
-    echo "$description:$value" >> "$equipment"
-}
-
 find_params_mem() {
     # 1. Ищем значение $value в mem_info
     # 2. Выводим 2 столбец после ":"
@@ -159,8 +151,6 @@ info_iface() {
     local total_iface
     local count_diff=0
     local tmpfile="/tmp/iface.list"
-
-    name="$(lspci | grep Ethernet | awk -F: '{print $3}' | sed 's/^[ \t]*//' | sort -u)"
     def_route="$(ip r | grep -m1 default | egrep -o [a-z]+[0-9]+)"
     ip -o l | egrep ": (eth|em|en|bond)" | grep -v "@" | grep -vw "${def_route// /}" > "$tmpfile"
     total_iface="$(wc -l < $tmpfile)"
@@ -170,8 +160,6 @@ info_iface() {
         gen_iface_params "$iface" "$count_diff" "$total_iface"
     done < "$tmpfile"
     printf '],\n'
-    write_to_file "name" "$name"
-    rm -f "$tmpfile"
 }
 
 main() {
