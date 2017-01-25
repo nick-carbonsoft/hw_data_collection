@@ -50,7 +50,7 @@ cpu_params() {
     freq="$(find_params_cpu "CPU MHz")"
 
     ht="$(find_params_cpu "Thread")"
-    [[ "$ht" == "1" ]] && ht="0"
+    [[ "$ht" == "1" ]] && ht="0" || ht=1
     l1d_cache="$(find_params_cpu "L1d cache")"
     l1i_cache="$(find_params_cpu "L1i cache")"
     l2_cache="$(find_params_cpu "L2 cache")"
