@@ -43,7 +43,7 @@ find_params_cpu() {
 }
 
 cpu_params() {
-    local number_proc_core vendor model l3_cache mem_total freq ht l2_cache l3_cache
+    local number_proc_core vendor model l3_cache mem_total freq ht l2_cache l3_cache bogomips
     number_proc_core="$(nproc)"
     vendor="$(find_params_cpu "Vendor ID")"
     model="$(grep 'model name' /proc/cpuinfo | sort -u | awk -F: '{print $2}' | sed 's/^[ \t]*//' | tr -s " ")"
@@ -55,6 +55,7 @@ cpu_params() {
     l1i_cache="$(find_params_cpu "L1i cache")"
     l2_cache="$(find_params_cpu "L2 cache")"
     l3_cache="$(find_params_cpu "L3 cache")"
+    bogomips="$(find_params_cpu "BogoMIPS")"
 
     printf '"processor": [
     {
@@ -66,11 +67,12 @@ cpu_params() {
         "L1d":"%s",
         "L1i":"%s",
         "L2":"%s",
-        "L3":"%s"
+        "L3":"%s",
+        "bogoMIPS":"%s"
     }
     ],\n' "$number_proc_core" "$model" "$vendor" "$freq" \
         "$ht" "$l1d_cache" "$l1i_cache" \
-        "$l2_cache" "$l3_cache"
+        "$l2_cache" "$l3_cache" "$bogomips"
 
 }
 
