@@ -48,7 +48,6 @@ cpu_params() {
     vendor="$(find_params_cpu "Vendor ID")"
     model="$(grep 'model name' /proc/cpuinfo | sort -u | awk -F: '{print $2}' | sed 's/^[ \t]*//' | tr -s " ")"
     freq="$(find_params_cpu "CPU MHz")"
-
     ht="$(find_params_cpu "Thread")"
     [[ "$ht" == "1" ]] && ht="0" || ht=1
     l1d_cache="$(find_params_cpu "L1d cache")"
@@ -56,7 +55,6 @@ cpu_params() {
     l2_cache="$(find_params_cpu "L2 cache")"
     l3_cache="$(find_params_cpu "L3 cache")"
     bogomips="$(find_params_cpu "BogoMIPS")"
-
     printf '"processor": [
     {
         "CPU":"%s",
@@ -128,13 +126,11 @@ rom_params() {
     local disk_type
     local model
     local rom_desc
-
     # Быстрая проверка того, что это не виртуалка
-    rom_desc="$(cat /proc/scsi/scsi | egrep -v "CDDVDW|CD-ROM|DVD-ROM|File-CD" | grep "Model" | head -1)"
+    rom_desc="$(cat /proc/scsi/scsi | egrep -v "CDDVDW|CD-ROM|DVD-ROM|File-CD|system" | grep "Model" | head -1)"
     disk_type="$(cat /sys/block/sda/queue/rotational)"
     vendor="$(echo $rom_desc | grep -o -P '(?<=Vendor:).*(?=Model)' | sed 's/^[ ]*//' | sed 's/[ \t]*$//')"
     model="$(echo "$rom_desc" | grep -o -P '(?<=Model:).*(?=Rev:)' | sed 's/^[ ]*//' | sed 's/[ \t]*$//')"
-
     if [ $disk_type = "1" ];then
         disk_type="HDD"
     else
