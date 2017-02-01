@@ -127,7 +127,7 @@ rom_params() {
     local model
     local rom_desc
     # Быстрая проверка того, что это не виртуалка
-    rom_desc="$(cat /proc/scsi/scsi | egrep -v "CDDVDW|CD-ROM|DVD-ROM|File-CD|system" | grep "Model" | head -1)"
+    rom_desc="$(cat /proc/scsi/scsi | egrep -v "CDDVDW|CD-ROM|DVD-ROM|File-CD|system|DVDROM" | grep "Model" | head -1)"
     disk_type="$(cat /sys/block/sda/queue/rotational)"
     vendor="$(echo $rom_desc | grep -o -P '(?<=Vendor:).*(?=Model)' | sed 's/^[ ]*//' | sed 's/[ \t]*$//')"
     model="$(echo "$rom_desc" | grep -o -P '(?<=Model:).*(?=Rev:)' | sed 's/^[ ]*//' | sed 's/[ \t]*$//')"
