@@ -23,12 +23,11 @@ mem_params() {
     local mem_total
     mem_total="$(find_params_mem "MemTotal")"
     mem_free="$(find_params_mem "MemFree")"
-    printf '"RAM": [
+    printf '"RAM":
     {
         "total":"%s",
         "free":"%s"
-    }
-    ],\n' "$mem_total" "$mem_free"
+    },\n' "$mem_total" "$mem_free"
 }
 
 find_params_cpu() {
@@ -55,7 +54,7 @@ cpu_params() {
     l2_cache="$(find_params_cpu "L2 cache")"
     l3_cache="$(find_params_cpu "L3 cache")"
     bogomips="$(find_params_cpu "BogoMIPS")"
-    printf '"processor": [
+    printf '"processor":
     {
         "CPU":"%s",
         "model":"%s",
@@ -67,8 +66,7 @@ cpu_params() {
         "L2":"%s",
         "L3":"%s",
         "bogoMIPS":"%s"
-    }
-    ],\n' "$number_proc_core" "$model" "$vendor" "$freq" \
+    },\n' "$number_proc_core" "$model" "$vendor" "$freq" \
         "$ht" "$l1d_cache" "$l1i_cache" \
         "$l2_cache" "$l3_cache" "$bogomips"
 
@@ -94,20 +92,19 @@ gen_iface_params() {
     local flow_control
     local LSPCI="/tmp/lspci.tmp"
     lspci > "$LSPCI"
+    iface="${iface%:}"
     for id in $(ethtool -i $iface | grep bus-info | sed 's/.*0000://'); do
         product_name="$(grep -w $id $LSPCI | cut -d: -f3 | sed 's/^[ \t]*//')"
     done
-    driver="$(iface_params -i "${iface%:}" "driver")"
-    speed="$(iface_params " " "${iface%:}" "Speed")"
-    rx_buffer="$(iface_params -g "${iface%:}" "RX:" | collect_buffers)"
-    tx_buffer="$(iface_params -g "${iface%:}" "TX:" | collect_buffers)"
-    queue_count="$(ls -1 /sys/class/net/${iface%:}/queues/ | grep "rx" | wc -l)"
-    flow_control="$(iface_params " " "${iface%:}" "Advertised pause frame use")"
+    driver="$(iface_params -i "$iface" "driver")"
+    speed="$(iface_params " " "$iface" "Speed")"
+    rx_buffer="$(iface_params -g "$iface" "RX:" | collect_buffers)"
+    tx_buffer="$(iface_params -g "$iface" "TX:" | collect_buffers)"
+    queue_count="$(ls -1 /sys/class/net/$iface/queues/ | grep "rx" | wc -l)"
+    flow_control="$(iface_params " " "$iface" "Advertised pause frame use")"
     [[ "$flow_control" == "No" ]] && flow_control=0 || flow_control=1
-
     printf '
-    {
-        "iface":"%s",
+    "%s": {
         "product_name":"%s",
         "driver":"%s",
         "queue_count":"%s",
@@ -136,13 +133,12 @@ rom_params() {
     else
         disk_type="SSD"
     fi
-    printf '"ROM": [
+    printf '"HDD":
     {
         "vendor":"%s",
         "model":"%s",
         "type":"%s"
-    }
-    ]\n' "$vendor" "$model" "$disk_type"
+    }\n' "$vendor" "$model" "$disk_type"
 }
 
 info_iface() {
@@ -152,12 +148,12 @@ info_iface() {
     def_route="$(ip r | grep -m1 default | egrep -o [a-z]+[0-9]+)"
     ip -o l | egrep ": (eth|em|en|bond)" | grep -v "@" | grep -vw "${def_route// /}" > "$tmpfile"
     total_iface="$(wc -l < $tmpfile)"
-    printf '"interfaces": [\n'
+    printf '"interfaces": {'
     while read _ iface _; do
         (( count_diff++ ))
         gen_iface_params "$iface" "$count_diff" "$total_iface"
     done < "$tmpfile"
-    printf '],\n'
+    printf '},\n'
 }
 
 main() {
