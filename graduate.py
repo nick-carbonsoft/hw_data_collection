@@ -58,7 +58,7 @@ def results():
         graduate.update({"driver %s" % iface:grade_iface('interfaces', iface, 'driver', NET)})
         graduate.update({"queue_count %s" % iface:grade_iface('interfaces', iface, 'queue_count', '4')})
     graduate.update({'HDD': not grade_string('HDD','model', VM)})
-    print(float(sum(graduate.values())) / len(graduate))
+    print("%.2f" % (float(sum(graduate.values())) / len(graduate)))
 
 if __name__ == "__main__":
     results()
