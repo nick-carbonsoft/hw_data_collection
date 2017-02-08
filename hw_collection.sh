@@ -166,4 +166,4 @@ main() {
     echo "}"
 }
 
-main 2>/dev/null
+main 2>/dev/null > "/tmp/data.json"
