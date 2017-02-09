@@ -157,7 +157,6 @@ info_iface() {
 }
 
 main() {
-    root_verify
     echo "{"
     cpu_params
     mem_params
@@ -166,4 +165,5 @@ main() {
     echo "}"
 }
 
+root_verify
 main 2>/dev/null > "/tmp/data.json"
