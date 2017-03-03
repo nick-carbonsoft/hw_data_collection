@@ -123,9 +123,13 @@ rom_params() {
     local disk_type
     local model
     local rom_desc
+    local devices
     # Быстрая проверка того, что это не виртуалка
     rom_desc="$(cat /proc/scsi/scsi | egrep -v "CDDVDW|CD-ROM|DVD-ROM|File-CD|system|DVDROM|Flash Disk|USB" | grep "Model" | head -1)"
-    disk_type="$(cat /sys/block/sda/queue/rotational)"
+    devices="$(find /sys/block/ -type l -regextype egrep -regex "/sys/block/[a-z]+$")"
+    for device in $devices; do
+        disk_type="$(cat "$device/queue/rotational")"
+    done
     vendor="$(echo $rom_desc | grep -o -P '(?<=Vendor:).*(?=Model)' | sed 's/^[ ]*//' | sed 's/[ \t]*$//')"
     model="$(echo "$rom_desc" | grep -o -P '(?<=Model:).*(?=Rev:)' | sed 's/^[ ]*//' | sed 's/[ \t]*$//')"
     if [ $disk_type = "1" ];then
